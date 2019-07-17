@@ -1,0 +1,16 @@
+{
+  "name": "rate-limiter",
+  "version": "0.1.0",
+  "description": "Demonstrate a rate-limiter using Redis sorted sets.",
+  "main": "server.js",
+  "dependencies": {
+    "ejs": "^2.6.1",
+    "express": "^4.16.3",
+    "redis": "^2.8.0",
+    "uuid": "^3.3.2"
+  },
+  "scripts": {
+    "start": "node server.js 3000 6379"
+  },
+  "author": "Martin Forstner, Redis Labs"
+}
