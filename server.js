@@ -7,26 +7,40 @@
 * Example: node server.js 3000 6379
 */
 
-const express = require('express');
-const app = express();
+const app = require('express')();
 const httpServer = require('http').Server(app);
 const redis = require('redis');
+
+const limiter = require('./limiter.js');
 
 const httpPort = process.argv[2] || 3000;
 const redisPort = process.argv[3] || 6379;
 
-// Redis client to query and publish to a channel
-const redisClient = redis.createClient({
+// set up Redis
+redisClient = redis.createClient({
   port : redisPort,
   host : 'localhost'
 });
 
-// All static files are under $HOME/public
-app.use(express.static('public'))
-app.set('view engine', 'ejs');
-require('./routes.js')(app, redisClient);
+// set up route
+app.get('/', function(req, res) {
+  limiter(redisClient, function(error, result) {
+    if (error) {
+      throw error;
+    }
+    if (result) {
+      res.status(200).send('All good, go ahead.')
+    } else {
+      res.status(429).send('You are too fast, slow down!')
+    }
+  }); 
+});
 
-// Start the HTTP server
-httpServer.listen(httpPort, function(){
-  console.log('HTTP listening on :' + httpPort);
+// start the HTTP server
+httpServer.listen(httpPort, function(error, result) {
+  if (error) {
+    throw error;
+  } else {
+    console.log('HTTP listening on :' + httpPort);
+  }
 });

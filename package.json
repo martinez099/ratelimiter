@@ -4,7 +4,6 @@
   "description": "Demonstrate a rate-limiter using Redis sorted sets.",
   "main": "server.js",
   "dependencies": {
-    "ejs": "^2.6.1",
     "express": "^4.16.3",
     "redis": "^2.8.0",
     "uuid": "^3.3.2"
