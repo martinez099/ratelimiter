@@ -8,24 +8,20 @@ module.exports = function(redis, cb) {
 
   var now = Date.now()
 
-  // record current request
-  redis.zadd(KEY_NAME, now, uuid());
-
-  // count number of requests in the last PER_MS milliseconds
-  redis.zcount(KEY_NAME, now - PER_MS, now, function(error, result) {
+  redis.multi([
+    ['zadd', KEY_NAME, now, uuid()],                 // record current request in  a sorted set
+    ['zremrangebyscore', KEY_NAME, 0, now - PER_MS], // remove outdated requests, i.e. older than PER_MS milliseconds
+    ['zcount', KEY_NAME, '-inf', '+inf']             // count number of remaining requests in the sorted set
+  ]).exec(function(error, results) {
     if (error) {
       cb(error);
     } else {
-      // remove outdated requests, i.e. older than PER_MS milliseconds
-      redis.zremrangebyscore(KEY_NAME, 0, now - PER_MS);
-
-      // deny access if more than MAX_REQ requests
-      if (result > MAX_REQ) {
-        cb(undefined, false);
+      if (results[2] > MAX_REQ) {
+        cb(undefined, false);                        // return false if more than MAX_REQ requests
       } else {
-        cb(undefined, true);
+        cb(undefined, true);                         // return true if less or equal than MAX_REQ requests
       }
     }
-  });
+  })
 
 };
