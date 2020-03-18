@@ -11,7 +11,7 @@ module.exports = function(redis, cb) {
   redis.multi([
     ['zadd', KEY_NAME, now, uuid()],                 // record current request in  a sorted set
     ['zremrangebyscore', KEY_NAME, 0, now - PER_MS], // remove outdated requests, i.e. older than PER_MS milliseconds
-    ['zcount', KEY_NAME, '-inf', '+inf']             // count number of remaining requests in the sorted set
+    ['zcard', KEY_NAME]                              // count number of remaining requests in the sorted set
   ]).exec(function(error, results) {
     if (error) {
       cb(error);
